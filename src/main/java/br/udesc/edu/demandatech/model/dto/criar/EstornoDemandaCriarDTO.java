@@ -1,13 +1,16 @@
 package br.udesc.edu.demandatech.model.dto.criar;
 
-import br.udesc.edu.demandatech.model.entity.Demanda;
-import jakarta.validation.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record EstornoDemandaCriarDTO(
-    @NotEmpty(message = "Campo descrição está vazio")
-    @Size(max = 50, message = "Campo descrição tem mais de 50 caracteres")
+    @JsonAlias("justificativa")
+    @NotBlank(message = "Campo justificativa está vazio")
+    @Size(max = 50, message = "Campo justificativa tem mais de 50 caracteres")
     String descricao,
-    Demanda demanda
+    @NotNull(message = "Campo demanda está vazio")
+    Long idDemanda
 )
 { }

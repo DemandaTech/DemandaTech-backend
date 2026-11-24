@@ -1,15 +1,14 @@
 package br.udesc.edu.demandatech.model.dto.editar;
 
 import br.udesc.edu.demandatech.model.enumerators.Prioridade;
-import br.udesc.edu.demandatech.model.entity.TipoDemanda;
 import jakarta.validation.constraints.Size;
 
 public record DemandaEditarDTO(
-        @Size(max = 30, message = "Campo título tem mais de 30 caracteres") 
+        @Size(max = 30, message = "Campo título tem mais de 30 caracteres")
         String titulo,
-        @Size(max = 250, message = "Campo descrição tem mais de 250 caracteres") 
+        @Size(max = 250, message = "Campo descrição tem mais de 250 caracteres")
         String descricao,
         Prioridade prioridade,
-        TipoDemanda tipo
+        Long idTipo
 ) {
 }

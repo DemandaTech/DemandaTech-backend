@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @AllArgsConstructor
@@ -22,8 +23,13 @@ public class EstornoDemanda {
 
     private String descricao;
     private LocalDate data;
+    private LocalTime hora;
 
     @ManyToOne
     @JoinColumn(name = "id_demanda")
     private Demanda demanda;
+
+    @ManyToOne
+    @JoinColumn(name = "registrado_por")
+    private Funcionario registradoPor;
 }

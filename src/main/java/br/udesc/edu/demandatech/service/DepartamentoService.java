@@ -4,13 +4,20 @@ import br.udesc.edu.demandatech.model.dto.criar.DepartamentoCriarDTO;
 import br.udesc.edu.demandatech.model.dto.editar.DepartamentoEditarDTO;
 import br.udesc.edu.demandatech.model.entity.Departamento;
 import br.udesc.edu.demandatech.model.entity.Funcionario;
+import br.udesc.edu.demandatech.model.enumerators.Perfil;
 import br.udesc.edu.demandatech.model.exception.*;
+import br.udesc.edu.demandatech.model.projection.DepartamentoCadastroProjection;
+import br.udesc.edu.demandatech.model.projection.DepartamentoResumoProjection;
 import br.udesc.edu.demandatech.repository.DepartamentoRepository;
+import br.udesc.edu.demandatech.repository.FuncionarioRepository;
+import br.udesc.edu.demandatech.repository.TipoDemandaRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +28,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class DepartamentoService {
     private DepartamentoRepository departamentoRepository;
+    private FuncionarioRepository funcionarioRepository;
+    private TipoDemandaRepository tipoDemandaRepository;
     private Validator validator;
 
     private void validar(Object dto) {
@@ -31,7 +40,7 @@ public class DepartamentoService {
     }
 
     public Departamento criar(DepartamentoCriarDTO departamentoCriarDTO, Funcionario funcionario) {
-        if(!funcionario.getAdmin()) {
+        if(!funcionario.temPerfil(Perfil.ADMINISTRADOR)) {
             throw new PermissaoNegada();
         }
         validar(departamentoCriarDTO);
@@ -41,7 +50,7 @@ public class DepartamentoService {
     }
 
     public Departamento atualizar(Long id, DepartamentoEditarDTO departamentoEditarDTO, Funcionario funcionario) {
-        if(!funcionario.getAdmin()) {
+        if(!funcionario.temPerfil(Perfil.ADMINISTRADOR)) {
             throw new PermissaoNegada();
         }
         validar(departamentoEditarDTO);
@@ -54,8 +63,13 @@ public class DepartamentoService {
         throw new IdNaoEncontrado("departamento", id);
     }
 
-    public List<Departamento> buscarTudo() {
-        return departamentoRepository.findAll();
+    public List<DepartamentoResumoProjection> listarResumo() {
+        return departamentoRepository.listarResumo();
+    }
+
+    public Page<DepartamentoCadastroProjection> listarCadastros(String search, Pageable pageable) {
+        String termo = "%" + (search == null ? "" : search.trim().toLowerCase()) + "%";
+        return departamentoRepository.listarCadastros(termo, pageable);
     }
 
     public Departamento buscarPorId(Long id) {
@@ -75,11 +89,17 @@ public class DepartamentoService {
     }
 
     public void removerPorId(Long id, Funcionario funcionario) {
-        if(!funcionario.getAdmin()) {
+        if(!funcionario.temPerfil(Perfil.ADMINISTRADOR)) {
             throw new PermissaoNegada();
         }
         Optional<Departamento> optionalDepartamento = departamentoRepository.findById(id);
         if(optionalDepartamento.isPresent()) {
+            if (funcionarioRepository.existsByDepartamentoIdDepartamento(id)) {
+                throw new ReferenciaChaveEstrangeira("Não é possível remover um departamento que possui funcionários.");
+            }
+            if (tipoDemandaRepository.existsByDepartamentoIdDepartamento(id)) {
+                throw new ReferenciaChaveEstrangeira("Não é possível remover um departamento que possui tipos de demanda.");
+            }
             try {
                 departamentoRepository.deleteById(id);
             } catch (DataIntegrityViolationException e) {

@@ -27,6 +27,7 @@ public class Demanda {
     private LocalDate data;
     private LocalTime hora;
     private String descricao;
+    private String justificativa;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "prioridade")
