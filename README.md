@@ -22,7 +22,7 @@ Como o projeto utiliza o **Maven Wrapper**, você não precisa ter o Maven insta
 
 ## 📁 Arquivo de Backup
 
-O arquivo de backup está localiado em `src/main/resources/static/backup_demandas.sql`. Ele foi gerado utilizando o comando `mysqldump` e pode ser restaurado utilizando o comando `mysql`.
+O arquivo de backup está localizado em `src/main/resources/static/backup_demandas.sql`. Ele recria o schema `demanda_tech` do zero no PostgreSQL (estrutura + dados de teste) e **apaga os dados existentes**. Para restaurar, rode-o no Query Tool do pgAdmin ou use `psql -U postgres -d postgres -f backup_demandas.sql`.
 
 ---
 

@@ -57,7 +57,16 @@ public class DepartamentoService {
         Optional<Departamento> opcionalDepartamento = departamentoRepository.findById(id);
         if(opcionalDepartamento.isPresent()) {
             Departamento departamento = opcionalDepartamento.get();
-            BeanUtils.copyProperties(departamentoEditarDTO, departamento);
+            // Só altera o que veio preenchido; campo ausente mantém o valor atual
+            String descricao = departamentoEditarDTO.descricao();
+            if (descricao != null && !descricao.isBlank()) {
+                departamento.setDescricao(descricao.trim());
+            }
+            Funcionario gerente = departamentoEditarDTO.gerente();
+            if (gerente != null && gerente.getMatricula() != null) {
+                departamento.setGerente(funcionarioRepository.findById(gerente.getMatricula())
+                        .orElseThrow(() -> new IdNaoEncontrado("funcionário", gerente.getMatricula())));
+            }
             return departamentoRepository.save(departamento);
         }
         throw new IdNaoEncontrado("departamento", id);

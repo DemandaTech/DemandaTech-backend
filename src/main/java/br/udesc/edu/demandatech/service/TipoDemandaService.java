@@ -2,6 +2,7 @@ package br.udesc.edu.demandatech.service;
 
 import br.udesc.edu.demandatech.model.dto.criar.TipoDemandaCriarDTO;
 import br.udesc.edu.demandatech.model.dto.editar.TipoDemandaEditarDTO;
+import br.udesc.edu.demandatech.model.entity.Departamento;
 import br.udesc.edu.demandatech.model.entity.Funcionario;
 import br.udesc.edu.demandatech.model.enumerators.Perfil;
 import br.udesc.edu.demandatech.model.entity.TipoDemanda;
@@ -10,6 +11,7 @@ import br.udesc.edu.demandatech.model.exception.PermissaoNegada;
 import br.udesc.edu.demandatech.model.exception.ReferenciaChaveEstrangeira;
 import br.udesc.edu.demandatech.model.exception.ValidacaoException;
 import br.udesc.edu.demandatech.model.projection.TipoDemandaCadastroProjection;
+import br.udesc.edu.demandatech.repository.DepartamentoRepository;
 import br.udesc.edu.demandatech.repository.TipoDemandaRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -28,6 +30,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class TipoDemandaService {
     private TipoDemandaRepository tipoDemandaRepository;
+    private DepartamentoRepository departamentoRepository;
     private Validator validator;
 
     private void validar(Object dto) {
@@ -51,7 +54,16 @@ public class TipoDemandaService {
         Optional<TipoDemanda> opt = tipoDemandaRepository.findById(id);
         if(opt.isPresent()) {
             TipoDemanda t = opt.get();
-            BeanUtils.copyProperties(tipoDemandaEditarDTO, t);
+            // Só altera o que veio preenchido; campo ausente mantém o valor atual
+            String descricao = tipoDemandaEditarDTO.descricao();
+            if (descricao != null && !descricao.isBlank()) {
+                t.setDescricao(descricao.trim());
+            }
+            Departamento departamento = tipoDemandaEditarDTO.departamento();
+            if (departamento != null && departamento.getIdDepartamento() != null) {
+                t.setDepartamento(departamentoRepository.findById(departamento.getIdDepartamento())
+                        .orElseThrow(() -> new IdNaoEncontrado("departamento", departamento.getIdDepartamento())));
+            }
             return tipoDemandaRepository.save(t);
         }
         throw new IdNaoEncontrado("tipo demanda", id);
