@@ -123,10 +123,11 @@ public interface DemandaRepository extends JpaRepository<Demanda, Long> {
     SELECT new br.udesc.edu.demandatech.model.projection.DemandaDetalheProjection(
         d.idDemanda, d.titulo, d.descricao, d.justificativa, d.status, d.prioridade,
         r.matricula, r.nome, c.matricula, c.nome,
-        d.data, d.hora, t.idTipo, t.descricao, dep.descricao
+        d.data, d.hora, t.idTipo, t.descricao, dep.descricao, cdep.descricao
     )
     FROM Demanda d
     JOIN d.criador c
+    LEFT JOIN c.departamento cdep
     JOIN d.tipo t
     JOIN t.departamento dep
     LEFT JOIN d.responsavel r
